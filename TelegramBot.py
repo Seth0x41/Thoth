@@ -1,6 +1,7 @@
 from commands import *
-# List The subjects 
-subject = os.path.dirname(os.path.abspath(__file__))
+SubjectPath = None
+# assign current location of the bot and sending inline keyboard button to the user.
+subject = os.path.dirname(os.path.abspath(__file__)) 
 @bot.message_handler(commands=['subjects','المواد'])
 def selectSubject(message):
     keyboard= types.InlineKeyboardMarkup()
@@ -17,6 +18,7 @@ def selectSubject(message):
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call):
     ReturnedMessage = "هى دى المحاضرات الموجوده، ياريت تبعت رقم المحاضرة إلى انتَ محتاجها."
+    global SubjectPath
     SubjectPath = os.path.dirname(os.path.abspath(__file__))+"/Subjects/" + call.data
     if os.path.exists(SubjectPath) == True:
         if len(os.listdir(SubjectPath)) == 0: # Check is empty..
@@ -40,7 +42,6 @@ def Masseage_validation(message):
 @bot.message_handler(func=Masseage_validation)
 def processing(message):
     request = message.text.split()[1]
-    global SubjectPath
     LecturesFolder = f"{SubjectPath}/محاضرة {request}"
     bot.send_message(chat_id=message.chat.id,text="ثانية واحده وهنبعتهالك")
     if os.path.exists(LecturesFolder) == True:
@@ -57,7 +58,7 @@ def processing(message):
                     data = f.read()
                     bot.send_message(chat_id=message.chat.id,text=data)
             else:
-                print("Something wrong!")
+                print("المحاضرة مفيهاش أى محتوي")
     else:
         bot.send_message(message.chat.id,"للأسف المحاضرة دى مش موجودة عندنا")
 
