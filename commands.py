@@ -2,7 +2,7 @@
 from telebot import types
 import os
 import telebot
-API_KEY= '5101529403:AAHtdX8KBLI_In7rg5SCIEEvAH34m7Ut8MI'
+API_KEY= ''
 bot = telebot.TeleBot(API_KEY)
 from TextDict import *
 # this is the start message, it's sending first message (starting message) That show how to use the bot and its commamd
