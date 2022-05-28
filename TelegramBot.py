@@ -1,3 +1,4 @@
+from requests import request
 from commands import *
 SubjectPath = None
 # assign current location of the bot and sending inline keyboard button to the user.
@@ -11,12 +12,15 @@ def selectSubject(message):
     Button4=telebot.types.InlineKeyboardButton(text='رسومات حاسب', callback_data="ComputerGraphics")
     Button5=telebot.types.InlineKeyboardButton(text='برمجة منطقية', callback_data="LogicalProgramming")
     Button6=telebot.types.InlineKeyboardButton(text='بحوث عمليات', callback_data="OperationsResarch")
-    keyboard.add(Button1,Button2,Button3,Button4,Button5,Button6)
+    Button7=telebot.types.InlineKeyboardButton(text='ميكانيكا الكم', callback_data="QuantumMechanics")
+    Button8=telebot.types.InlineKeyboardButton(text='بلازما', callback_data="Plasma")
+    keyboard.add(Button1,Button2,Button3,Button4,Button5,Button6,Button7,Button8)
     bot.send_message(message.chat.id,"هتذاكر إيه؟", reply_markup=keyboard)  
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call):
+    lectures=[]
     ReturnedMessage = "هى دى المحاضرات الموجوده، ياريت تبعت رقم المحاضرة إلى انتَ محتاجها."
     global SubjectPath
     SubjectPath = os.path.dirname(os.path.abspath(__file__))+"/Subjects/" + call.data
@@ -24,27 +28,26 @@ def query_handler(call):
         if len(os.listdir(SubjectPath)) == 0: # Check is empty..
             ReturnedMessage= "للأسف ملقتش محاضرات للمادة دى عندى، لو حابب تساعدنى إنى أضيفها ياريت تكلمنى"
         else:
+            markup = types.ReplyKeyboardMarkup()
             for FileName in sorted(os.listdir(SubjectPath)):
-                bot.send_message(call.message.chat.id,text=FileName)
-        
+                markup.add(types.KeyboardButton(FileName))
+            bot.send_message(call.message.chat.id, "اختار المحاضرة", reply_markup=markup)
+    
     else:
         ReturnedMessage= "للأسف المادة دى مش متسجلة عندى، لو شايف إن فى حاجة غلط ياريت تكلمنى"
     
     if call.message:
+
         bot.edit_message_text(chat_id=call.message.chat.id,message_id=call.message.message_id,text=ReturnedMessage)
 
-def Masseage_validation(message):
-  request = message.text.split()
-  if len(request) < 2 or request[0].lower() not in "محاضرة":
-    return False
-  else:
-    return True
-@bot.message_handler(func=Masseage_validation)
+
+@bot.message_handler(func=lambda message: True)
 def processing(message):
-    request = message.text.split()[1]
-    LecturesFolder = f"{SubjectPath}/محاضرة {request}"
-    bot.send_message(chat_id=message.chat.id,text="ثانية واحده وهنبعتهالك")
+    request_path = ' '.join([str(elem) for elem in message.text.split()])
+    LecturesFolder = f"{SubjectPath}/{request_path}"
     if os.path.exists(LecturesFolder) == True:
+        bot.send_message(chat_id=message.chat.id,text="ثانية واحده وهنبعتهالك")
+
         for lecture in sorted(os.listdir(LecturesFolder)):
             LecturePath= f"{LecturesFolder}/{lecture}"
             if lecture.endswith(".jpg") or lecture.endswith(".png"):
@@ -59,8 +62,10 @@ def processing(message):
                     bot.send_message(chat_id=message.chat.id,text=data)
             else:
                 print("المحاضرة مفيهاش أى محتوي")
+        markup = types.ReplyKeyboardRemove(selective=False)
+        bot.send_message(message.chat.id,"بالتوفيق ❤️", reply_markup=markup)   
     else:
         bot.send_message(message.chat.id,"للأسف المحاضرة دى مش موجودة عندنا")
 
 if __name__ == '__main__':
-     bot.polling(none_stop=True)
+     bot.infinity_polling(timeout=10, long_polling_timeout = 5)
